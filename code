@@ -1,0 +1,16 @@
+!pip install prereform2modern
+from prereform2modern import Processor
+
+out=open("Autour de la luna1.txt", "w")
+orig_text = open ("/content/Autour de la luna.txt")
+for i in orig_text:
+  text_res, changes, s_json = Processor.process_text(
+      text=i,
+      show=False,
+      delimiters=False,
+      check_brackets=False
+      )
+  out.write(text_res)
+  
+orig_text.close()
+out.close()
