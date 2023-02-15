@@ -1,0 +1,52 @@
+!pip install -U spacy
+!pip install pymorphy2
+!pip install nltk
+
+import spacy
+import nltk
+import string
+from spacy import displacy
+from collections import Counter
+import pandas as pd
+import pymorphy2
+pd.options.display.max_rows = 600
+pd.options.display.max_colwidth = 400
+!python -m spacy download ru_core_news_md
+import ru_core_news_md
+nlp = spacy.load("en_core_web_sm")
+#nlp = ru_core_news_md.load()
+morph = pymorphy2.MorphAnalyzer()
+all_stopwords = nlp.Defaults.stop_words
+punct = set(string.punctuation)
+nltk.download('punkt')
+
+f='/content/Домби_и_сын_Чарльз_Диккенс.txt'
+text = open(f, encoding='utf-8').read()
+list2 = nltk.word_tokenize(text)
+
+
+tokens_without_sw= [word for word in list2 if not word in all_stopwords]
+tokens_without_sw1= [word for word in tokens_without_sw if not word in punct]
+
+def lemmatize(text):
+    #words = text.split() # разбиваем текст на слова
+    res = []
+    for word in tokens_without_sw1:
+        p = morph.parse(word)[0]
+        res.append(p.normal_form)
+    return res
+
+#print(lemmatize(text))
+
+
+document = nlp(" ".join(lemmatize(text)))
+places = []
+for named_entity in document.ents:
+  if named_entity.label_ == "LOC":
+    places.append(named_entity.text)
+
+places_tally = Counter(places)
+df = pd.DataFrame(places_tally.most_common(), columns=['place', 'count'])
+
+
+df.to_excel("Домби_и_сын_Чарльз_Диккенс.xlsx")
